@@ -34,5 +34,11 @@
             action="action_don_tu"
         />
 
+        <menuitem name="Tổng hợp chấm công"
+            id="menu_tong_hop_cham_cong"
+            parent="menu_root"
+            sequence="5"
+            action="cham_cong.action_tong_hop_cham_cong"
+        />
     </data>
 </odoo>

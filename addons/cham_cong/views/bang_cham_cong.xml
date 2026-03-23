@@ -1,26 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Form View -->
         <record id="view_bang_cham_cong_form" model="ir.ui.view">
             <field name="name">bang_cham_cong.form</field>
             <field name="model">bang_cham_cong</field>
             <field name="arch" type="xml">
                 <form>
                     <sheet>
-                        <div class="oe_read_only" style="font-size:25px">Bảng chấm công</div>
-                        <group col="4" string="Thông tin chung">
-                            <field name="nhan_vien_id"/>
-                            <field name="ngay_cham_cong"/>
-                            <field name="ca_lam"/>
-                            <field name="gio_vao_ca"/>
-                            <field name="gio_ra_ca"/>
-                            <field name="gio_vao"/>
-                            <field name="gio_ra"/>
-                            <field name="phut_di_muon"/>
-                            <field name="phut_ve_som"/>
-                            <field name="trang_thai"/>
-                            <field name="loai_don"/>
-                            <field name="thoi_gian_xin"/>
+                        <div class="oe_title">
+                            <h1><field name="Id_BCC" readonly="1"/></h1>
+                        </div>
+
+                        <group string="Thông tin chung">
+                            <group>
+                                <field name="nhan_vien_id"/>
+                                <field name="ngay_cham_cong"/>
+                                <field name="ca_lam" readonly="1"/>
+                                <field name="trang_thai" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="dang_ky_ca_lam_id" readonly="1"/>
+                                <field name="don_tu_id" readonly="1"/>
+                                <field name="loai_don" readonly="1"/>
+                                <field name="thoi_gian_xin" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group string="Thời gian làm việc">
+                            <group string="Giờ theo ca">
+                                <field name="gio_vao_ca" readonly="1"/>
+                                <field name="gio_ra_ca" readonly="1"/>
+                            </group>
+                            <group string="Giờ thực tế">
+                                <field name="gio_vao"/>
+                                <field name="gio_ra"/>
+                            </group>
+                        </group>
+
+                        <group string="Thống kê vi phạm">
+                            <group>
+                                <field name="phut_di_muon_goc" readonly="1"/>
+                                <field name="phut_di_muon" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="phut_ve_som_goc" readonly="1"/>
+                                <field name="phut_ve_som" readonly="1"/>
+                            </group>
                         </group>
                     </sheet>
                 </form>
@@ -31,7 +57,10 @@
             <field name="name">bang_cham_cong.tree</field>
             <field name="model">bang_cham_cong</field>
             <field name="arch" type="xml">
-                <tree>
+                <tree decoration-success="trang_thai=='di_lam'"
+                      decoration-danger="trang_thai in ['vang_mat', 'di_muon_ve_som']"
+                      decoration-warning="trang_thai in ['di_muon', 've_som']"
+                      decoration-info="trang_thai=='vang_mat_co_phep'">
                     <field name="nhan_vien_id"/>
                     <field name="ngay_cham_cong"/>
                     <field name="ca_lam"/>
@@ -43,27 +72,50 @@
                     <field name="phut_ve_som"/>
                     <field name="trang_thai"/>
                     <field name="loai_don"/>
-                    <field name="thoi_gian_xin"/>
                 </tree>
             </field>
         </record>
 
+        <!-- Search View -->
         <record id="bang_cham_cong_search" model="ir.ui.view">
+            <field name="name">bang_cham_cong.search</field>
             <field name="model">bang_cham_cong</field>
             <field name="arch" type="xml">
                 <search>
                     <field name="nhan_vien_id"/>
                     <field name="ngay_cham_cong"/>
-                    <field name="ca_lam"/>
-                    <field name="gio_vao_ca"/>
-                    <field name="gio_ra_ca"/>
-                    <field name="gio_vao"/>
-                    <field name="gio_ra"/>
-                    <field name="phut_di_muon"/>
-                    <field name="phut_ve_som"/>
                     <field name="trang_thai"/>
-                    <field name="loai_don"/>
-                    <field name="thoi_gian_xin"/>
+                    <!-- Bộ lọc nhanh -->
+                    <filter string="Đi làm" name="di_lam"
+                        domain="[('trang_thai','=','di_lam')]"/>
+                    <filter string="Đi muộn" name="di_muon"
+                        domain="[('trang_thai','=','di_muon')]"/>
+                    <filter string="Về sớm" name="ve_som"
+                        domain="[('trang_thai','=','ve_som')]"/>
+                    <filter string="Đi muộn và về sớm" name="di_muon_ve_som"
+                        domain="[('trang_thai','=','di_muon_ve_som')]"/>
+                    <filter string="Vắng mặt" name="vang_mat"
+                        domain="[('trang_thai','=','vang_mat')]"/>
+                    <filter string="Vắng có phép" name="vang_mat_co_phep"
+                        domain="[('trang_thai','=','vang_mat_co_phep')]"/>
+                    <separator/>
+                    <filter string="Hôm nay" name="today"
+                        domain="[('ngay_cham_cong','=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="Tháng này" name="this_month"
+                        domain="[('ngay_cham_cong','&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('ngay_cham_cong','&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <!-- Của tôi -->
+                    <group expand="0" string="Nhóm theo">
+                        <filter string="Nhân viên" name="group_nhan_vien"
+                            context="{'group_by': 'nhan_vien_id'}"/>
+                        <filter string="Ngày" name="group_ngay"
+                            context="{'group_by': 'ngay_cham_cong'}"/>
+                        <filter string="Trạng thái" name="group_trang_thai"
+                            context="{'group_by': 'trang_thai'}"/>
+                        <filter string="Ca làm" name="group_ca_lam"
+                            context="{'group_by': 'ca_lam'}"/>
+                    </group>
                 </search>
             </field>
         </record>

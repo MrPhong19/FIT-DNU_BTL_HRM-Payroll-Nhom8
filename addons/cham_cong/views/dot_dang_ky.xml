@@ -6,6 +6,12 @@
             <field name="model">dot_dang_ky</field>
             <field name="arch" type="xml">
                 <form>
+                    <header>
+                        <button name="action_tao_dang_ky_tu_dong"
+                            string="Tạo đăng ký tự động"
+                            type="object"
+                            class="btn-primary"/>
+                    </header>
                     <sheet>
                         <div class="oe_read_only" style="font-size:25px">Đợt đăng ký</div>
                         <group col="4" string="Thông tin chung">
@@ -66,9 +72,7 @@
             <field name="name">Đợt đăng ký</field>
             <field name="res_model">dot_dang_ky</field>
             <field name="view_mode">tree,form</field>
-            <field name="search_view_id" ref = "dot_dang_ky_search"/>
+            <field name="search_view_id" ref="dot_dang_ky_search"/>
         </record>
     </data>
 </odoo>
-        
-    

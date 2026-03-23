@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ir_cron_cap_nhat_hop_dong" model="ir.cron">
+            <field name="name">Cập nhật trạng thái hợp đồng lao động</field>
+            <field name="model_id" ref="model_hop_dong_lao_dong"/>
+            <field name="state">code</field>
+            <field name="code">model.action_cap_nhat_trang_thai_tat_ca()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+        </record>
+        <record id="ir_cron_tao_tong_hop_cham_cong" model="ir.cron">
+            <field name="name">Tự động tạo tổng hợp chấm công cuối tháng</field>
+            <field name="model_id" ref="cham_cong.model_tong_hop_cham_cong"/>
+            <field name="state">code</field>
+            <field name="code">model.action_tu_dong_tao_tong_hop()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

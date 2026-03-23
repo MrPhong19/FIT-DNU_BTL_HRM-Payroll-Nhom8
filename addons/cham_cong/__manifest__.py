@@ -32,10 +32,9 @@
         'views/bang_cham_cong.xml',
         'views/dot_dang_ky.xml',
         'views/don_tu.xml',
+        'views/tong_hop_cham_cong.xml',
         'views/menu.xml',
     ],
     # only loaded in demonstration mode
-    'demo': [
-        'demo/demo.xml',
-    ],
+    'demo': [],
 }

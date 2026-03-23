@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_nhan_vien_graph" model="ir.ui.view">
+            <field name="name">nhan_vien.graph</field>
+            <field name="model">nhan_vien</field>
+            <field name="arch" type="xml">
+                <graph string="Nhân viên theo phòng ban" type="pie">
+                    <field name="phong_ban_id"/>
+                    <field name="id" string="Số lượng" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_nhan_vien_pivot" model="ir.ui.view">
+            <field name="name">nhan_vien.pivot</field>
+            <field name="model">nhan_vien</field>
+            <field name="arch" type="xml">
+                <pivot string="Thống kê nhân viên">
+                    <field name="phong_ban_id" type="row"/>
+                    <field name="trang_thai_lam_viec" type="col"/>
+                    <field name="id" string="Số lượng" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="action_dashboard_nhan_su" model="ir.actions.act_window">
+            <field name="name">Dashboard</field>
+            <field name="res_model">nhan_vien</field>
+            <field name="view_mode">graph,pivot,tree,form</field>
+        </record>
+    </data>
+</odoo>

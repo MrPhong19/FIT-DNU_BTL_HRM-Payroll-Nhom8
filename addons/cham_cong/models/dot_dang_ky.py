@@ -89,3 +89,29 @@ class DotDangKy(models.Model):
                 record.ten_dot = f"Tháng {record.thang_dang_ky}/{record.nam_dang_ky}"
             else:
                 record.ten_dot = False
+    #Tạo đăng ký ca làm tự động 1 tháng (trừ thứ 7 và cn)
+    def action_tao_dang_ky_tu_dong(self):
+        for record in self:
+            thang = int(record.thang_dang_ky)
+            nam = int(record.nam_dang_ky)
+            ngay_dau = date(nam, thang, 1)
+            ngay_cuoi = date(nam, thang, calendar.monthrange(nam, thang)[1])
+            for nhan_vien in record.nhan_vien_ids:
+                ngay = ngay_dau
+                while ngay <= ngay_cuoi:
+                    if ngay.weekday() < 5:
+                        existing = self.env['dang_ky_ca_lam_theo_ngay'].search([
+                            ('dot_dang_ky_id', '=', record.id),
+                            ('nhan_vien_id', '=', nhan_vien.id),
+                            ('ngay_lam', '=', ngay),
+                        ], limit=1)
+                        if not existing:
+                            self.env['dang_ky_ca_lam_theo_ngay'].create({
+                                # Dùng ngày làm mã → luôn duy nhất
+                                'ma_dot_ngay': f"{record.ma_dot}-{nhan_vien.id}-{ngay.strftime('%d%m%Y')}",
+                                'dot_dang_ky_id': record.id,
+                                'nhan_vien_id': nhan_vien.id,
+                                'ngay_lam': ngay,
+                                'ca_lam': 'Cả ngày',
+                            })
+                    ngay += timedelta(days=1)

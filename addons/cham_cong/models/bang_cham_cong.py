@@ -189,15 +189,20 @@ class BangChamCong(models.Model):
         ('vang_mat_co_phep', 'Vắng mặt có phép'),
     ], string="Trạng thái", compute="_compute_trang_thai", store=True)
     
-    @api.depends('phut_di_muon', 'phut_ve_som', 'gio_vao', 'gio_ra')
+    @api.depends('phut_di_muon', 'phut_ve_som', 'gio_vao', 'gio_ra', 'don_tu_id')
     def _compute_trang_thai(self):
         for record in self:
             if not record.gio_vao and not record.gio_ra:
-                record.trang_thai = 'vang_mat'
+                # Có đơn nghỉ được duyệt
+                if record.don_tu_id and record.don_tu_id.trang_thai_duyet == 'da_duyet' and record.loai_don == 'nghi':
+                    record.trang_thai = 'vang_mat_co_phep'
+                else:
+                    record.trang_thai = 'vang_mat'
+            elif record.phut_di_muon > 0 and record.phut_ve_som > 0:
+                # Fix bug: kiểm tra cả 2 điều kiện trước
+                record.trang_thai = 'di_muon_ve_som'
             elif record.phut_di_muon > 0:
                 record.trang_thai = 'di_muon'
-            elif record.phut_di_muon > 0 and record.phut_ve_som > 0:
-                record.trang_thai = 'di_muon_ve_som'
             elif record.phut_ve_som > 0:
                 record.trang_thai = 've_som'
             else:

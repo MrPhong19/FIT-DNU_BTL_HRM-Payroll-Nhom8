@@ -20,6 +20,7 @@ class LichSuCongTac(models.Model):
 
     ngay_bat_dau = fields.Date("Ngày bắt đầu", required=True)
     ngay_ket_thuc = fields.Date("Ngày kết thúc")
+    ly_do_chuyen = fields.Text("Lý do chuyển công tác")
     trang_thai = fields.Selection(
         [
             ("Đang giữ", "Đang giữ"),
