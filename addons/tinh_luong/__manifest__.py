@@ -13,4 +13,9 @@
         'views/dashboard.xml',
         'views/menu.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'tinh_luong/static/src/js/dashboard.js',
+        ],
+    },
 }

@@ -150,11 +150,20 @@ class KhenThuongKyLuat(models.Model):
                 record.trang_thai = 'cho_duyet'
 
     def action_duyet(self):
-        for record in self:
-            if record.trang_thai == 'cho_duyet':
-                record.trang_thai = 'da_duyet'
-                record.ngay_duyet = date.today()
-                record.nguoi_duyet_id = self.env.user.id
+        for rec in self:
+            if rec.trang_thai == 'cho_duyet':
+                rec.trang_thai = 'da_duyet'
+                rec.ngay_duyet = date.today()
+                rec.nguoi_duyet_id = self.env.user.id
+                # Tự động recompute bảng lương nếu đang ở nháp
+                bang_luong = self.env['bang_luong'].search([
+                    ('nhan_vien_id', '=', rec.nhan_vien_id.id),
+                    ('thang', '=', rec.thang_ap_dung),
+                    ('nam', '=', rec.nam_ap_dung),
+                    ('trang_thai', '=', 'nhap'),
+                ], limit=1)
+                if bang_luong:
+                    bang_luong._compute_khen_thuong_ky_luat()
 
     def action_tu_choi(self):
         for record in self:

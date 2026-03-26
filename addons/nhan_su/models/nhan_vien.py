@@ -68,15 +68,11 @@ class NhanVien(models.Model):
     phong_ban_id = fields.Many2one(
         "phong_ban",
         string="Phòng ban",
-        compute="_compute_cong_tac",
-        store=True,
         tracking=True
     )
     chuc_vu_id = fields.Many2one(
         "chuc_vu",
         string="Chức vụ",
-        compute="_compute_cong_tac",
-        store=True,
         tracking=True
     )
 
@@ -120,21 +116,8 @@ class NhanVien(models.Model):
                 )
             else:
                 record.tham_nien = 0
-
-    @api.depends("lich_su_cong_tac_ids")
-    def _compute_cong_tac(self):
-        for record in self:
-            if record.lich_su_cong_tac_ids:
-                lich_su = self.env['lich_su_cong_tac'].search([
-                    ('nhan_vien_id', '=', record.id),
-                    ('loai_chuc_vu', '=', "Chính"),
-                    ('trang_thai', '=', "Đang giữ")
-                ], limit=1)
-                record.chuc_vu_id = lich_su.chuc_vu_id.id if lich_su else False
-                record.phong_ban_id = lich_su.phong_ban_id.id if lich_su else False
-            else:
-                record.chuc_vu_id = False
-                record.phong_ban_id = False
+    
+    
 
     #VALIDATION
     @api.constrains("ngay_sinh")
@@ -282,3 +265,39 @@ class NhanVien(models.Model):
             'domain': [('nhan_vien_id', '=', self.id)],
             'context': {'default_nhan_vien_id': self.id},
         }
+
+    @api.model
+    def create(self, vals):
+        record = super(NhanVien, self).create(vals)
+        if vals.get('phong_ban_id') and vals.get('chuc_vu_id'):
+            self.env['lich_su_cong_tac'].create({
+                'nhan_vien_id': record.id,
+                'phong_ban_id': vals['phong_ban_id'],
+                'chuc_vu_id': vals['chuc_vu_id'],
+                'ngay_bat_dau': vals.get('ngay_vao_lam') or fields.Date.today(),
+                'loai_chuc_vu': 'Chính',
+                'trang_thai': 'Đang giữ',
+            })
+        return record
+
+    def write(self, vals):
+        for record in self:
+            if vals.get('phong_ban_id') or vals.get('chuc_vu_id'):
+                # Kết thúc lịch sử cũ
+                lich_su_cu = self.env['lich_su_cong_tac'].search([
+                    ('nhan_vien_id', '=', record.id),
+                    ('loai_chuc_vu', '=', 'Chính'),
+                    ('trang_thai', '=', 'Đang giữ'),
+                ], limit=1)
+                if lich_su_cu:
+                    lich_su_cu.ngay_ket_thuc = fields.Date.today()
+                # Tạo lịch sử mới
+                self.env['lich_su_cong_tac'].create({
+                    'nhan_vien_id': record.id,
+                    'phong_ban_id': vals.get('phong_ban_id') or record.phong_ban_id.id,
+                    'chuc_vu_id': vals.get('chuc_vu_id') or record.chuc_vu_id.id,
+                    'ngay_bat_dau': fields.Date.today(),
+                    'loai_chuc_vu': 'Chính',
+                    'trang_thai': 'Đang giữ',
+                })
+        return super(NhanVien, self).write(vals)

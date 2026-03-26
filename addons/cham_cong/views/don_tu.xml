@@ -6,6 +6,25 @@
             <field name="model">don_tu</field>
             <field name="arch" type="xml">
                 <form>
+                    <header>
+                        <button name="action_gui_duyet"
+                            string="Gửi duyệt"
+                            type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': [('trang_thai_duyet', '!=', 'nhap')]}"/>
+                        <button name="action_duyet"
+                            string="Duyệt"
+                            type="object"
+                            class="btn-success"
+                            attrs="{'invisible': [('trang_thai_duyet', '!=', 'cho_duyet')]}"/>
+                        <button name="action_tu_choi"
+                            string="Từ chối"
+                            type="object"
+                            class="btn-danger"
+                            attrs="{'invisible': [('trang_thai_duyet', '!=', 'cho_duyet')]}"/>
+                        <field name="trang_thai_duyet" widget="statusbar"
+                            statusbar_visible="nhap,cho_duyet,da_duyet"/>
+                    </header>
                     <sheet>
                         <div class="oe_read_only" style="font-size:25px">Đơn từ</div>
                         <group col="4" string="Thông tin chung">

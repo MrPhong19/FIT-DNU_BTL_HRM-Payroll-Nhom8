@@ -80,8 +80,8 @@
                             <group>
                                 <field name="ngay_vao_lam"/>
                                 <field name="tham_nien" readonly="1"/>
-                                <field name="phong_ban_id" readonly="1"/>
-                                <field name="chuc_vu_id" readonly="1"/>
+                                <field name="phong_ban_id"/>
+                                <field name="chuc_vu_id"/>
                             </group>
                             <group>
                                 <field name="he_so_luong"/>

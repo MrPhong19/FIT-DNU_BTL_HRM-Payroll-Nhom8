@@ -11,10 +11,11 @@ class DonTu(models.Model):
     ngay_ap_dung = fields.Date("Ngày áp dụng", required=True)
     
     trang_thai_duyet = fields.Selection([
+        ('nhap', 'Nháp'),
         ('cho_duyet', 'Chờ duyệt'),
         ('da_duyet', 'Đã duyệt'),
         ('tu_choi', 'Từ chối')
-    ], string="Trạng thái phê duyệt", default='cho_duyet', required=True)
+    ], string="Trạng thái phê duyệt", default='nhap', required=True)
 
     loai_don = fields.Selection([
         ('nghi', 'Đơn xin nghỉ'),
@@ -22,5 +23,20 @@ class DonTu(models.Model):
         ('ve_som', 'Đơn xin về sớm')
     ], string="Loại đơn", required=True)
 
-    # Thời gian xin đi muộn/về sớm (phút)
+    #Thời gian xin đi muộn/về sớm (phút)
     thoi_gian_xin = fields.Float("Thời gian xin (phút)")
+    
+    def action_gui_duyet(self):
+        for rec in self:
+            if rec.trang_thai_duyet == 'nhap':
+                rec.trang_thai_duyet = 'cho_duyet'
+
+    def action_duyet(self):
+        for rec in self:
+            if rec.trang_thai_duyet == 'cho_duyet':
+                rec.trang_thai_duyet = 'da_duyet'
+
+    def action_tu_choi(self):
+        for rec in self:
+            if rec.trang_thai_duyet == 'cho_duyet':
+                rec.trang_thai_duyet = 'tu_choi'

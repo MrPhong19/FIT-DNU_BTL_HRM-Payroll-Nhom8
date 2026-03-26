@@ -1,6 +1,12 @@
 from odoo import models, fields, api
 from datetime import date
 from odoo.exceptions import ValidationError
+import urllib.request
+import urllib.error
+import json
+
+TELEGRAM_TOKEN = "YOUR_BOT_TOKEN"
+TELEGRAM_CHAT_ID = "YOUR_CHAT_ID"
 
 class HopDongLaoDong(models.Model):
     _name = 'hop_dong_lao_dong'
@@ -144,8 +150,47 @@ class HopDongLaoDong(models.Model):
             'target': 'new',
         }
     
+
+    def _gui_telegram(self, message):
+        try:
+            import urllib.request
+            import json
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+            payload = json.dumps({
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "HTML"
+            }).encode('utf-8')
+            req = urllib.request.Request(
+                url, data=payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                return response.status == 200
+        except Exception:
+            return False
+
     @api.model
     def action_cap_nhat_trang_thai_tat_ca(self):
-        """Scheduled Action: chạy mỗi ngày, tự động cập nhật trạng thái hợp đồng"""
         hop_dong_list = self.search([('trang_thai', 'not in', ['huy'])])
         hop_dong_list._compute_trang_thai()
+
+        # Gửi thông báo hợp đồng sắp hết hạn
+        sap_het_han = self.search([('trang_thai', '=', 'sap_het_han')])
+        if sap_het_han:
+            lines = []
+            for hd in sap_het_han:
+                lines.append(
+                    f"👤 <b>{hd.nhan_vien_id.ho_va_ten}</b>\n"
+                    f"   📋 HĐ: {hd.ma_hop_dong} | Loại: {hd.loai_hop_dong}\n"
+                    f"   ⏰ Hết hạn: {hd.ngay_ket_thuc.strftime('%d/%m/%Y')} "
+                    f"(còn {hd.so_ngay_con_lai} ngày)"
+                )
+            message = (
+                f"⚠️ <b>CẢNH BÁO HỢP ĐỒNG SẮP HẾT HẠN</b>\n"
+                f"📅 Ngày: {date.today().strftime('%d/%m/%Y')}\n"
+                f"📊 Số hợp đồng: {len(sap_het_han)}\n\n"
+                + "\n\n".join(lines)
+            )
+            self._gui_telegram(message)

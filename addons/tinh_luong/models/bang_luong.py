@@ -2,6 +2,12 @@ from odoo import models, fields, api
 from datetime import date
 import calendar
 from odoo.exceptions import ValidationError
+import urllib.request
+import urllib.error
+import json
+
+TELEGRAM_TOKEN = "8749957174:AAHP6B8f1DwaP-1RRiqEkkUHDMRtXnAqf74" 
+TELEGRAM_CHAT_ID = "7059709523"  
 
 class BangLuong(models.Model):
     _name = 'bang_luong'
@@ -123,7 +129,7 @@ class BangLuong(models.Model):
         required=True,
         tracking=True
     )
-    nguoi_duyet_id = fields.Many2one('nhan_vien', string="Người duyệt", tracking=True)
+    nguoi_duyet_id = fields.Many2one('res.users', string="Người duyệt", tracking=True)
     ngay_duyet = fields.Date("Ngày duyệt", tracking=True)
 
     #Thông tin ngân hàng
@@ -263,12 +269,7 @@ class BangLuong(models.Model):
 
             lines = []
             #Lương cơ bản
-            lines.append({
-                'ten_khoan': 'Lương cơ bản',
-                'loai': 'cong',
-                'so_tien': record.luong_co_ban * record.he_so_luong,
-                'ghi_chu': f'Lương cơ bản x Hệ số {record.he_so_luong}'
-            })
+            
             #Thưởng thâm niên
             if record.thuong_tham_nien > 0:
                 lines.append({
@@ -311,11 +312,46 @@ class BangLuong(models.Model):
             if record.trang_thai == 'nhap':
                 record.trang_thai = 'cho_duyet'
 
+    
+    
+
+    def _gui_telegram(self, message):
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+            payload = json.dumps({
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "HTML"
+            }).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                return response.status == 200
+        except Exception as e:
+            return False
+
     def action_duyet(self):
         for record in self:
             if record.trang_thai == 'cho_duyet':
                 record.trang_thai = 'da_duyet'
                 record.ngay_duyet = date.today()
+                record.nguoi_duyet_id = self.env.user.id
+
+                # Gửi thông báo Telegram
+                message = (
+                    f"✅ <b>BẢNG LƯƠNG ĐÃ ĐƯỢC DUYỆT</b>\n\n"
+                    f"👤 Nhân viên: <b>{record.nhan_vien_id.ho_va_ten}</b>\n"
+                    f"🏢 Phòng ban: {record.phong_ban_id.ten_phong_ban if record.phong_ban_id else 'Chưa có'}\n"
+                    f"📅 Tháng: {record.thang}/{record.nam}\n"
+                    f"💰 Lương thực lãnh: <b>{record.luong_thuc_lanh:,.0f} VNĐ</b>\n"
+                    f"👨‍💼 Người duyệt: {self.env.user.name}\n"
+                    f"🕐 Ngày duyệt: {record.ngay_duyet.strftime('%d/%m/%Y')}"
+                )
+                self._gui_telegram(message)
 
     def action_thanh_toan(self):
         for record in self:
