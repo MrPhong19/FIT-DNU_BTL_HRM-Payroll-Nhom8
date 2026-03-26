@@ -5,8 +5,8 @@ import urllib.request
 import urllib.error
 import json
 
-TELEGRAM_TOKEN = "token tele bot"
-TELEGRAM_CHAT_ID = "chat id"
+TELEGRAM_TOKEN = "8749957174:AAHP6B8f1DwaP-1RRiqEkkUHDMRtXnAqf74" #thay bằng token bot của bạn
+TELEGRAM_CHAT_ID = "7059709523" #thay bằng chat id của bạn
 
 class HopDongLaoDong(models.Model):
     _name = 'hop_dong_lao_dong'

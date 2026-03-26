@@ -6,7 +6,7 @@ import urllib.request
 import urllib.error
 
 
-GROQ_API_KEY = "key api"  
+GROQ_API_KEY = "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"   #thay bằng key groq của bạn
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
